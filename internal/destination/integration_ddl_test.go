@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"example.com/artie-mini-cdc/internal/cdc"
-	"example.com/artie-mini-cdc/internal/errclass"
+	"example.com/pg-live-sync/internal/cdc"
+	"example.com/pg-live-sync/internal/errclass"
 )
 
 // Schema drift that cannot be repaired must fail loudly: the error is surfaced

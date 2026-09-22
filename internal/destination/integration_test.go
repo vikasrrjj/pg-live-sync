@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
+	"example.com/pg-live-sync/internal/cdc"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -29,8 +29,8 @@ func uniqueTable(prefix string) string {
 
 func integrationGate(t *testing.T) {
 	t.Helper()
-	if os.Getenv("ARTIE_INTEGRATION") != "1" {
-		t.Skip("set ARTIE_INTEGRATION=1 to run the docker integration tests (make integration)")
+	if os.Getenv("PGCDC_INTEGRATION") != "1" {
+		t.Skip("set PGCDC_INTEGRATION=1 to run the docker integration tests (make integration)")
 	}
 }
 

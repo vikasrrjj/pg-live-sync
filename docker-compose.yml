@@ -155,14 +155,14 @@ services:
 
   source-reader:
     build: .
-    image: artie-mini-cdc:local
+    image: pg-live-sync:local
     environment:
       SOURCE_SQL_DSN: postgres://postgres:postgres@source-postgres:5432/source?sslmode=disable
       SOURCE_REPLICATION_DSN: postgres://postgres:postgres@source-postgres:5432/source?sslmode=disable&replication=database
-      PG_REPLICATION_SLOT: artie_demo_slot
-      PG_PUBLICATION: artie_demo_pub
+      PG_REPLICATION_SLOT: live_demo_slot
+      PG_PUBLICATION: live_demo_pub
       KAFKA_BROKERS: kafka-1:19091,kafka-2:19092,kafka-3:19093
-      KAFKA_TOPIC: artie.users
+      KAFKA_TOPIC: live.users
     depends_on:
       source-postgres:
         condition: service_healthy
@@ -176,16 +176,16 @@ services:
 
   destination-writer:
     build: .
-    image: artie-mini-cdc:local
+    image: pg-live-sync:local
     command: ["/usr/local/bin/destination-writer"]
     environment:
       DESTINATION_DSN: postgres://postgres:postgres@destination-postgres:5432/destination?sslmode=disable
       SOURCE_SQL_DSN: postgres://postgres:postgres@source-postgres:5432/source?sslmode=disable
-      PG_REPLICATION_SLOT: artie_demo_slot
-      PG_PUBLICATION: artie_demo_pub
+      PG_REPLICATION_SLOT: live_demo_slot
+      PG_PUBLICATION: live_demo_pub
       KAFKA_BROKERS: kafka-1:19091,kafka-2:19092,kafka-3:19093
-      KAFKA_TOPIC: artie.users
-      KAFKA_CONSUMER_GROUP: artie-destination-v1
+      KAFKA_TOPIC: live.users
+      KAFKA_CONSUMER_GROUP: live-destination-v1
     depends_on:
       destination-postgres:
         condition: service_healthy

@@ -81,7 +81,7 @@ func TestSnapshotRoundTripTypes(t *testing.T) {
 		_, _ = source.Exec(context.Background(), `DELETE FROM public.profile WHERE user_id = 999999`)
 	})
 
-	snapshotter := NewSnapshotter(sourceIntegrationDSN(), "artie_demo_slot", "artie_demo_pub", applier)
+	snapshotter := NewSnapshotter(sourceIntegrationDSN(), "live_demo_slot", "live_demo_pub", applier)
 	if err := snapshotter.RunSnapshot(ctx); err != nil {
 		t.Fatalf("run snapshot: %v", err)
 	}

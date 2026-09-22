@@ -1,5 +1,5 @@
 /source-reader
 /destination-writer
-/artie-mini-cdc
+/pg-live-sync
 *.test
 *.out

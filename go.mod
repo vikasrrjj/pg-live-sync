@@ -1,4 +1,4 @@
-module example.com/artie-mini-cdc
+module example.com/pg-live-sync
 
 go 1.25.0
 

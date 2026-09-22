@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
+	"example.com/pg-live-sync/internal/cdc"
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgproto3"
@@ -33,8 +33,8 @@ func liveSourceReplicationDSN() string {
 }
 
 func integrationGate(t *testing.T) {
-	if os.Getenv("ARTIE_INTEGRATION") != "1" {
-		t.Skip("set ARTIE_INTEGRATION=1 to run docker integration tests")
+	if os.Getenv("PGCDC_INTEGRATION") != "1" {
+		t.Skip("set PGCDC_INTEGRATION=1 to run docker integration tests")
 	}
 }
 

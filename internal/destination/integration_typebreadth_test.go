@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
-	"example.com/artie-mini-cdc/internal/source"
+	"example.com/pg-live-sync/internal/cdc"
+	"example.com/pg-live-sync/internal/source"
 	"github.com/jackc/pglogrepl"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"

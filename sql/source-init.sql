@@ -12,6 +12,6 @@ CREATE TABLE public.profile (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE PUBLICATION artie_demo_pub
+CREATE PUBLICATION live_demo_pub
     FOR TABLE public.users, public.profile
     WITH (publish = 'insert, update, delete');

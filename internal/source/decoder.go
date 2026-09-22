@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
+	"example.com/pg-live-sync/internal/cdc"
 	"github.com/jackc/pglogrepl"
 )
 
@@ -388,7 +388,7 @@ func (decoder *Decoder) append(change pendingChange) error {
 		return nil
 	}
 	if transaction.spool == nil {
-		file, err := os.CreateTemp("", "artie-cdc-spool-*.jsonl")
+		file, err := os.CreateTemp("", "live-cdc-spool-*.jsonl")
 		if err != nil {
 			return fmt.Errorf("create transaction spool: %w", err)
 		}

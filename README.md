@@ -1,4 +1,4 @@
-# Artie Mini CDC
+# PG Live Sync
 
 A deliberately small, real change-data-capture pipeline:
 
@@ -32,8 +32,8 @@ docker compose logs -f source-reader destination-writer
 Wait until the logs contain both of these messages:
 
 ```text
-streaming PostgreSQL publication artie_demo_pub to Kafka topic artie.users
-consuming Kafka topic artie.users as group artie-destination-v1
+streaming PostgreSQL publication live_demo_pub to Kafka topic live.users
+consuming Kafka topic live.users as group live-destination-v1
 ```
 
 Press `Ctrl+C` to leave the log view; the containers keep running.
@@ -59,7 +59,7 @@ To see the raw JSON events retained in Kafka:
 ```bash
 docker compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
-  --topic artie.users \
+  --topic live.users \
   --from-beginning
 ```
 
@@ -94,7 +94,7 @@ That gives **exactly-once on replay**: a crash may cause the same event to be at
 
 - **Initial snapshot** (#21). The writer waits for the reader's replication slot, copies every published table inside one repeatable-read source transaction and one destination transaction, marks `snapshot_done` in `cdc_state`, and then hands over to the live stream. The slot's restart LSN is stamped on each snapshot row, so live events (always at or after that point) correctly overwrite the copy. If the destination says the snapshot is done but the source slot is gone, the writer refuses to run (corrupted state guard).
 - **Huge transactions** (#15). The reader keeps at most `DefaultSpoolCap` (4096) row changes in memory per transaction and spools the rest to a temporary file, then publishes them still in commit order. A 5000-row `INSERT` flows through with bounded memory.
-- **Schema evolution with auto-repair** (#17). Publication-level DDL is streamed like any change. When a change references a column the destination does not have, the writer no longer poisons blindly: it reads the missing columns' exact source definitions and adds them to the destination (`ADD COLUMN` with matching type, nullability, and default — and `CREATE TYPE ... AS ENUM` for enum dependencies), then retries the event once. If the drift cannot be repaired (type change of an existing column, a non-enum user type, a NOT NULL column without a default), the event is still quarantined to `cdc_dead_letters` and later events heal automatically once the destination is altered.
+- **Schema evolution with auto-repair** (#17). Publication-level DDL is streamed like any change. When a change references a column the destination does not have, the writer no longer poisons blindly: it reads the missing columns' exact source definitions and adds them to the destination (`ADD COLUMN` with matching type, nullability, and default - and `CREATE TYPE ... AS ENUM` for enum dependencies), then retries the event once. If the drift cannot be repaired (type change of an existing column, a non-enum user type, a NOT NULL column without a default), the event is still quarantined to `cdc_dead_letters` and later events heal automatically once the destination is altered.
 - **Primary-key changes** (#19). A key change arrives from pgoutput as a delete + insert pair; the writer applies both in one transaction. At boot the reader refuses published tables with `REPLICA IDENTITY NOTHING`, whose deletes and update keys can never be reconstructed.
 - **Unchanged TOAST values** (#7). When a TOASTed column is left untouched by an `UPDATE`, pgoutput may send an "unchanged toast" marker instead of the value. The decoder never guesses: with the default (primary-key) replica identity there is no old image to fill from, so the column is tagged as unchanged and the writer preserves the destination's existing value via a guarded `UPDATE` (no candidate-INSERT that would fabricate NULL for a NOT NULL column). On `REPLICA IDENTITY FULL` tables the full old image is available and the decoder copies it, so rows stay complete. The preserved value is the source's truth, so it is never re-fetched from the source. A key change that would need an unknown unchanged value is refused with a message pointing at `REPLICA IDENTITY FULL`.
 - **Poison quarantine** (#16). A change the destination can never accept (missing column, type/cast failure, constraint fault) is written to `cdc_dead_letters` with the reason, marked in `cdc_applied_events`, and never retried. Offsets keep moving; nothing is lost.
@@ -105,7 +105,7 @@ That gives **exactly-once on replay**: a crash may cause the same event to be at
 - **Types: arrays, enums, and precision** (#18). Values are typed on the wire: the snapshot reads columns as their own `col::text` representation (the same text format pgoutput emits) and live writes cast every parameter to the destination column's `format_type` via the catalog cache. Arrays (`text[]`), enums, numerics, timestamps, booleans, and `jsonb` round-trip exactly; a new enum on the source is even auto-created on the destination during schema repair.
 - **REPLICA IDENTITY FULL** (#26). Tables without a primary key can still be mirrored when `REPLICA IDENTITY FULL` is set: the reader discovers the full old-image columns at boot and uses them as the row key, while tables with no usable identity are refused with a clear message.
 - **TRUNCATE** (#27). `TRUNCATE` is decoded as one event per affected relation, guarded by a durable per-table watermark (`cdc_table_watermarks`), and applied only when the event's LSN is newer than the last applied truncate. Stale replays are idempotent no-ops.
-- **Apply pipelining** (#28). Each source transaction is applied in one destination transaction using a two-phase `pgx.Batch`: all dedupe markers are inserted first, then mutations are issued only for fresh events. The batch path preserves the exact semantics of the original per-event path while cutting wall-clock latency by roughly 2.7× for a 200-event transaction.
+- **Apply pipelining** (#28). Each source transaction is applied in one destination transaction using a two-phase `pgx.Batch`: all dedupe markers are inserted first, then mutations are issued only for fresh events. The batch path preserves the exact semantics of the original per-event path while cutting wall-clock latency by roughly 2.7x for a 200-event transaction.
 - **Dead-letter replay** (#29). The `cdcctl` CLI lists, replays, and drops quarantined events. Replayed events go through the same `Applier.Apply` path as live events; a permanent failure re-stashes the quarantine marker so restarts never retry the poison. The dead-letter record now stores the full `before` row and `unchanged_columns` for faithful replay.
 - **Prometheus metrics** (#30). Both binaries expose `/metrics`, `/healthz`, and `/readyz`. Exported metrics include `cdc_messages_processed_total`, `cdc_lag_seconds`, `cdc_retention_headroom_seconds`, `cdc_dead_letters_total`, `cdc_batch_duration_seconds`, `cdc_batch_size`, and `cdc_ready`.
 - **TLS and Kafka SASL/SCRAM** (#31). PostgreSQL connections honor `PGSSLMODE`, `PGSSLROOTCERT`, `PGSSLCERT`, and `PGSSLKEY`. Kafka connections support TLS (`KAFKA_TLS_ENABLED`, `KAFKA_CA_CERT`, `KAFKA_CLIENT_CERT`, `KAFKA_CLIENT_KEY`) and SASL/SCRAM (`KAFKA_SASL_USERNAME`, `KAFKA_SASL_PASSWORD`, `KAFKA_SASL_MECHANISM`). No secrets live in command-line flags.
@@ -144,10 +144,10 @@ Both binaries read connection settings from environment variables and expose met
 | `SOURCE_SQL_DSN` | `postgres://postgres:postgres@localhost:5433/source?sslmode=disable` | source PostgreSQL SQL DSN |
 | `SOURCE_REPLICATION_DSN` | `SOURCE_SQL_DSN` with `&replication=database` appended | source replication protocol DSN |
 | `KAFKA_BROKERS` | `localhost:9092` | comma-separated Kafka seed brokers |
-| `KAFKA_TOPIC` | `artie.users` | topic name |
-| `KAFKA_CONSUMER_GROUP` | `artie-destination-v1` | consumer group for the writer |
-| `PG_REPLICATION_SLOT` | `artie_demo_slot` | logical replication slot name |
-| `PG_PUBLICATION` | `artie_demo_pub` | publication name |
+| `KAFKA_TOPIC` | `live.users` | topic name |
+| `KAFKA_CONSUMER_GROUP` | `live-destination-v1` | consumer group for the writer |
+| `PG_REPLICATION_SLOT` | `live_demo_slot` | logical replication slot name |
+| `PG_PUBLICATION` | `live_demo_pub` | publication name |
 | `METRICS_PORT` | `9090` (reader), `9091` (writer) | Prometheus/health port |
 | `RETENTION_SECONDS` | `604800` (7 days) | budget used for `cdc_retention_headroom_seconds` |
 
@@ -228,7 +228,7 @@ make integration-verbose  # same, with -v
   unchanged-TOAST contract (filled from a full old image, preserved as a hint
   without one), the retention/lag helpers, and the slot fencing key.
 - **Integration tests** (`*integration_test.go`, behind the
-  `integration` build tag and the `ARTIE_INTEGRATION=1` env gate) run against
+  `integration` build tag and the `PGCDC_INTEGRATION=1` env gate) run against
   the demo's real Kafka and PostgreSQL but write to an isolated `dest_test`
   database, never the demo's `cdc_*` tables:
   - deduplication markers make a replay an idempotent no-op (the crash window

@@ -13,12 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
-	"example.com/artie-mini-cdc/internal/destination"
-	"example.com/artie-mini-cdc/internal/errclass"
-	"example.com/artie-mini-cdc/internal/metrics"
-	"example.com/artie-mini-cdc/internal/transport"
-	"example.com/artie-mini-cdc/internal/retry"
+	"example.com/pg-live-sync/internal/cdc"
+	"example.com/pg-live-sync/internal/destination"
+	"example.com/pg-live-sync/internal/errclass"
+	"example.com/pg-live-sync/internal/metrics"
+	"example.com/pg-live-sync/internal/transport"
+	"example.com/pg-live-sync/internal/retry"
 	"github.com/jackc/pgx/v5"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -538,11 +538,11 @@ func loadConfig() config {
 	return config{
 		destinationDSN: envOrDefault("DESTINATION_DSN", "postgres://postgres:postgres@localhost:5434/destination?sslmode=disable"),
 		sourceDSN:      envOrDefault("SOURCE_SQL_DSN", "postgres://postgres:postgres@localhost:5433/source?sslmode=disable"),
-		slot:           envOrDefault("PG_REPLICATION_SLOT", "artie_demo_slot"),
-		publication:    envOrDefault("PG_PUBLICATION", "artie_demo_pub"),
+		slot:           envOrDefault("PG_REPLICATION_SLOT", "live_demo_slot"),
+		publication:    envOrDefault("PG_PUBLICATION", "live_demo_pub"),
 		kafkaBrokers:   splitAndTrim(envOrDefault("KAFKA_BROKERS", "localhost:9092")),
-		kafkaTopic:     envOrDefault("KAFKA_TOPIC", "artie.users"),
-		kafkaGroup:     envOrDefault("KAFKA_CONSUMER_GROUP", "artie-destination-v1"),
+		kafkaTopic:     envOrDefault("KAFKA_TOPIC", "live.users"),
+		kafkaGroup:     envOrDefault("KAFKA_CONSUMER_GROUP", "live-destination-v1"),
 	}
 }
 

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
-	"example.com/artie-mini-cdc/internal/errclass"
+	"example.com/pg-live-sync/internal/cdc"
+	"example.com/pg-live-sync/internal/errclass"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -330,8 +330,8 @@ func stringPtr(value string) *string { return &value }
 // up, mirroring integrationGate for *testing.T.
 func integrationGateForBenchmark(b *testing.B) {
 	b.Helper()
-	if os.Getenv("ARTIE_INTEGRATION") != "1" {
-		b.Skip("set ARTIE_INTEGRATION=1 to run the docker integration benchmarks (make integration)")
+	if os.Getenv("PGCDC_INTEGRATION") != "1" {
+		b.Skip("set PGCDC_INTEGRATION=1 to run the docker integration benchmarks (make integration)")
 	}
 }
 
@@ -384,7 +384,7 @@ func uniqueTableForBenchmark(prefix string) string {
 }
 
 // BenchmarkApplyBatchProbe reports the per-source-transaction cost of the
-// batched path against the live destination (ARTIE_INTEGRATION=1).
+// batched path against the live destination (PGCDC_INTEGRATION=1).
 func BenchmarkApplyBatchProbe(b *testing.B) {
 	integrationGateForBenchmark(b)
 	ctx := context.Background()
@@ -433,7 +433,7 @@ func BenchmarkApplyBatchProbe(b *testing.B) {
 }
 
 // BenchmarkApplyInTxProbe is the pre-batching baseline: per-event statements
-// inside a single destination transaction (ARTIE_INTEGRATION=1).
+// inside a single destination transaction (PGCDC_INTEGRATION=1).
 func BenchmarkApplyInTxProbe(b *testing.B) {
 	integrationGateForBenchmark(b)
 	ctx := context.Background()

@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
-	"example.com/artie-mini-cdc/internal/destination"
+	"example.com/pg-live-sync/internal/cdc"
+	"example.com/pg-live-sync/internal/destination"
 	"github.com/jackc/pgx/v5"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -41,8 +41,8 @@ func destTestDSN() string {
 
 func integrationGateMain(t *testing.T) {
 	t.Helper()
-	if os.Getenv("ARTIE_INTEGRATION") != "1" {
-		t.Skip("set ARTIE_INTEGRATION=1 to run the docker integration tests (make integration)")
+	if os.Getenv("PGCDC_INTEGRATION") != "1" {
+		t.Skip("set PGCDC_INTEGRATION=1 to run the docker integration tests (make integration)")
 	}
 }
 
@@ -184,8 +184,8 @@ func crashEvent(id string, sequence int, idValue, table string) cdc.Event {
 // The two deterministic crash windows proven against real Kafka:
 //
 //	A. after the destination transaction committed, before the Kafka offset was
-//	   committed — the replay must be an idempotent no-op marker conflict;
-//	B. before the destination commit — the replay must apply the effects once.
+//	   committed - the replay must be an idempotent no-op marker conflict;
+//	B. before the destination commit - the replay must apply the effects once.
 //
 // In both cases the effects land exactly once and the offset advances exactly to
 // the end of the topic.

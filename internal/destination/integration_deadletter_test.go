@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
+	"example.com/pg-live-sync/internal/cdc"
 )
 
 // A quarantined update must round-trip: the preserved TOAST columns and the

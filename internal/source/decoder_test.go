@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/cdc"
+	"example.com/pg-live-sync/internal/cdc"
 	"github.com/jackc/pglogrepl"
 )
 

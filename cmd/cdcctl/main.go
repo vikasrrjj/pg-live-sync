@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"example.com/artie-mini-cdc/internal/destination"
+	"example.com/pg-live-sync/internal/destination"
 	"github.com/jackc/pgx/v5"
 )
 
