@@ -1,0 +1,5 @@
+/source-reader
+/destination-writer
+/artie-mini-cdc
+*.test
+*.out
