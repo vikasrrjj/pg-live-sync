@@ -385,7 +385,7 @@ func (applier *Applier) ApplyBatch(ctx context.Context, tx pgx.Tx, events []cdc.
 		return nil
 	}
 
-	// ── Phase 1: marker batch ──────────────────────────────────────────────
+	// Phase 1: marker batch.
 	markerBatch := &pgx.Batch{}
 	for i, event := range events {
 		if err := event.Validate(); err != nil {
@@ -417,7 +417,7 @@ func (applier *Applier) ApplyBatch(ctx context.Context, tx pgx.Tx, events []cdc.
 		return fmt.Errorf("flush marker batch: %w", err)
 	}
 
-	// ── Phase 2: ordered mutation batch with conditional flushes ────────────
+	// Phase 2: ordered mutation batch with conditional flushes.
 	type queuedExec struct {
 		index int
 		event cdc.Event
